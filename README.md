@@ -1,7 +1,7 @@
 # almirante
 Crea Clases automáticamente
 
-22.03.2021 día 000001.
+22.06.2021 día 000001.
 La idea de la que parto, es que dada una conexión a una base de datos (MySql/MariDB), definir una función a la que se le pasará el nombre de una tabla y la función será capaz de crear una clase con las funciones básicas para manejar esa tabla:
 - insertar
 - borrar
@@ -19,3 +19,5 @@ Como en esto de Internet y PHP ya está todo inventado, he hecho una búsqueda r
 https://debianhackers.net/creando-clases-y-objetos-flexibles-de-forma-dinamica-con-eval-y-arrayobject-en-php/
 Maravilla de idea. Voy a empezar explotando esta idea.
 
+23.06.2021 día 000002.
+Maravilla, la clase funciona divinamente, ya puedo hacer una select del contenido de una tabla, creo que la consulta dinámica con valores decimales me está dando problemas. Habrá que revisarlo.

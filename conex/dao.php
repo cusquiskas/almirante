@@ -86,7 +86,7 @@ class ConexionSistema extends mysqli
 
     public function hayError()
     {
-        return count($this->lista_errores) > 0;
+        return (!is_array($this->lista_errores)) ? false : count($this->lista_errores) > 0;
     }
 
     public function getListaErrores()
