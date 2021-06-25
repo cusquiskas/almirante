@@ -9,12 +9,26 @@
 
     header('Content-Type: application/json; charset=utf-8');
 
+    /*
+    $link = new ConexionSistema();
+    $datos = $link->consulta('desc ESPECIFICACION', []);
+    if ($link->hayError()) {
+        $link->close();
+        die(json_encode($manejador->getListaErrores()));
+    }
+    $link->close();
+    unset($link);
+    die(json_encode($datos));
+    */
+
     $manejador = ControladorDinamicoTabla::set('ARTICULO');
     if ($manejador->give([]) != 0) {
         die(json_encode($manejador->getListaErrores()));
     }
 
     $listaArticulo = $manejador->getArray();
+
+    //die(json_encode($listaArticulo));
 
     $manejador = ControladorDinamicoTabla::set('ESPECIFICACION');
     $manFamilia = ControladorDinamicoTabla::set('FAMILIA');
@@ -32,9 +46,9 @@
         } else {
             $listaArticulo[$i]['familia'] = $manFamilia->getArray();
             if ($manIVA->give(['iva_codiva' => $listaArticulo[$i]['familia'][0]['fam_codiva']]) != 0) {
-                die(json_encode($manFamilia->getListaErrores()));
+                die(json_encode($manIVA->getListaErrores()));
             } else {
-                $listaArticulo[$i]['familia'][0]['IVA'] = $manFamilia->getArray();
+                $listaArticulo[$i]['familia'][0]['IVA'] = $manIVA->getArray();
             }
         }
     }
@@ -44,7 +58,6 @@
     unset($manejador);
     unset($manFamilia);
     unset($manIVA);
-    unset($link);
 
 ?>
 
