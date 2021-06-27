@@ -22,15 +22,20 @@
     */
 
     $manejador = ControladorDinamicoTabla::set('ARTICULO');
+    if ($manejador->save(['art_nombre' => 'Cárcel perruna', 'art_codfam' => '1', 'art_codart' => '2']) > 0) {
+        die(json_encode($manejador->getListaErrores()));
+    }
+    
     if ($manejador->give([]) != 0) {
         die(json_encode($manejador->getListaErrores()));
     }
+    //die(json_encode($manejador->getListaErrores()));
 
     $listaArticulo = $manejador->getArray();
-
+    
     //die(json_encode($listaArticulo));
 
-    $manejador = ControladorDinamicoTabla::set('ESPECIFICACION');
+    /*$manejador = ControladorDinamicoTabla::set('ESPECIFICACION');
     $manFamilia = ControladorDinamicoTabla::set('FAMILIA');
     $manIVA = ControladorDinamicoTabla::set('IVA');
     $i = -1;
@@ -51,7 +56,7 @@
                 $listaArticulo[$i]['familia'][0]['IVA'] = $manIVA->getArray();
             }
         }
-    }
+    }*/
 
     echo json_encode($listaArticulo);
 

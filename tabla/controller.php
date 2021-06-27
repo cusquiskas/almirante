@@ -81,7 +81,7 @@ class ControladorDinamicoTabla
 
     private static function fncGive()
     {
-        return "public function give(\$array) { \$this->emptyClass(); \$this->clearArray(); \$this.clearError(); \$this->setDatos(\$array); return \$this->select(); }\n";
+        return "public function give(\$array) { \$this->emptyClass(); \$this->clearArray();\n \$this->clearError();\n \$this->setDatos(\$array);\n return \$this->select(); }\n";
     }
 
     private static function fncConstruct()
@@ -89,7 +89,7 @@ class ControladorDinamicoTabla
         return "public function __construct() { \$this->empty = \$this->getDatos(); return 0; }\n";
     }
 
-    private static function fncInsert(&$datos)
+    private static function fncInsert(&$datos, &$tabla)
     {
         $insertDatos = '';
         $insertColumn = '';
@@ -129,7 +129,7 @@ class ControladorDinamicoTabla
                     $insertExtraVal
                     \$datos = [$insertDatos];
                     \$query = 'INSERT 
-                                INTO ARTICULO 
+                                INTO $tabla 
                                     ($insertColumn) 
                              VALUES ($insertValue)';
                     \$link = new ConexionSistema();
@@ -143,6 +143,92 @@ class ControladorDinamicoTabla
 
                     return \$satus;
                 }\n";
+    }
+
+    private static function fncUpdate(&$datos, &$tabla)
+    {
+        $updateDatos = "";
+        $updateDatosPK = "";
+        $updateColumn = "";
+        $updateWhere = "";
+
+        foreach ($datos as &$valor) {
+            ++$i;
+            if ($valor['Key'] == 'PRI') {
+                $updateDatosPK .= ",".($i+10)." => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
+                if ($valor['Type'] == 'date') {
+                    $updateWhere .= "and ".$valor['Field']." = ?\n";
+                } else {
+                    $updateWhere .= "and ".$valor['Field']." = ?\n";
+                }
+            } else {
+                $updateDatos .= ",$i => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
+                if ($valor['Type'] == 'date') {
+                    $updateColumn .= ",".$valor['Field']." = ?\n";
+                } else {
+                    $updateColumn .= ",".$valor['Field']." = ?\n";
+                }
+            }
+        }
+        $updateDatos = substr($updateDatos, 1);
+        $updateColumn = substr($updateColumn, 1);
+        return "private function update()
+        {
+            \$datos = [
+                $updateDatos
+                $updateDatosPK
+            ];
+            \$query = 'UPDATE $tabla 
+                         SET $updateColumn
+                       WHERE 1 = 1
+                         $updateWhere';
+            \$link = new ConexionSistema();
+            \$link->ejecuta(\$query, \$datos);
+            \$this->error = \$link->getListaErrores();
+            \$satus = (\$link->hayError()) ? 1 : 0;
+            \$this->array = \$this->getDatos();
+            \$link->close();
+            unset (\$link);
+
+            return \$satus;
+        }";
+    }
+
+    private static function fncSave(&$datos) 
+    {
+        $cadena = "";
+        foreach ($datos as $valor) {
+            if ($valor['Key'] == 'PRI') {
+                $cadena .= ",'".$valor['Field']."' => \$array['".$valor['Field']."']\n";
+            }
+        }
+        $cadena = substr($cadena, 1);
+        return "public function save(\$array)
+        {
+            \$insert = true;
+            \$this->emptyClass();
+            \$arrayTemp = \$this->getArray();
+            \$this->clearArray();
+            \$this->clearError();
+            \$arrayUpdate = [$cadena];
+            if (\$this->give(\$arrayUpdate) == 0) {
+                echo var_dump(\$this->getArray());
+                if (count(\$this->getArray()) == 1) { \$insert = false; }
+            } else {
+                return 1;
+            }
+            \$this->array = \$arrayTemp;
+            \$this->setDatos(\$array);
+            echo var_dump(\$this->getDatos());
+            echo var_dump(\$insert);
+            if (\$insert) {
+                echo \"insert\n\";
+                return \$this->insert();
+            } else {
+                echo \"update\n\";
+                return \$this->update();
+            }
+        }";
     }
 
     private static function datosTabla(&$tabla)
@@ -203,8 +289,10 @@ class ControladorDinamicoTabla
             $cadena .= self::fncGetArray();
             $cadena .= self::fncGetListaErrores();
             $cadena .= self::fncGive();
+            $cadena .= self::fncInsert($array, $tabla);
+            $cadena .= self::fncUpdate($array, $tabla);
+            $cadena .= self::fncSave($array);
             $cadena .= self::fncConstruct();
-            $cadena .= self::fncInsert($array);
             $cadena .= "}\n";
             //echo var_dump($cadena, true);
             eval($cadena);
@@ -212,6 +300,30 @@ class ControladorDinamicoTabla
 
         return new $clsName();
     }
+}
+
+
+function update()
+{
+    $datos = [
+        2 => ['tipo' => 's', 'dato' => $this->art_nombre]
+       ,3 => ['tipo' => 'i', 'dato' => $this->art_codfam]
+     ,101 => ['tipo' => 'i', 'dato' => $this->art_codart]
+    ];
+    $query = 'UPDATE ARTICULO 
+                    SET art_nombre = ?
+                       ,art_codfam = ?
+                WHERE 1 = 1
+                  and art_codart = ?';
+    $link = new ConexionSistema();
+    $link->ejecuta($query, $datos);
+    $this->error = $link->getListaErrores();
+    $satus = ($link->hayError()) ? 1 : 0;
+    $this->array = $this->getDatos();
+    $link->close();
+    unset ($link);
+
+    return $satus;
 }
 ?>
 
