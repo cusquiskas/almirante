@@ -86,7 +86,7 @@ class ControladorDinamicoTabla
 
     private static function fncConstruct()
     {
-        return "public function __construct() { \$this->empty = \$this->getDatos(); return 0; }\n";
+        return "public function __construct() { \$this->empty = \$this->getDatos(); \$this->clearError(); return 0; }\n";
     }
 
     private static function fncInsert(&$datos, &$tabla)
@@ -107,7 +107,7 @@ class ControladorDinamicoTabla
             } else {
                 if ($valor['Null'] == 'NO') {
                     $insertExtraVal .= "\nif (is_null(\$this->".$valor['Field'].")) {
-                                            array_push(\$this->error, ['tipo'=>'Validacion', 'Campo'=>'".$valor['Field']."', 'Detalle' => 'No puede ser NULO']);
+                                            \$this->error[] = ['tipo'=>'Validacion', 'Campo'=>'".$valor['Field']."', 'Detalle' => 'No puede ser NULO'];
                                         }";
                 }
                 $insertDatos .= ",$i => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
@@ -122,11 +122,12 @@ class ControladorDinamicoTabla
         $insertDatos = substr($insertDatos, 1);
         $insertColumn = substr($insertColumn, 1);
         $insertValue = substr($insertValue, 1);
-        $insertExtraVal .= "\nif (!is_null(\$this->error)) return 1;\n";
+        $insertExtraVal .= "\nif (count(\$this->error) > 0) return 1;\n";
 
         return "private function insert()
                 {
                     $insertExtraVal
+                    echo var_dump(\$this->error);
                     \$datos = [$insertDatos];
                     \$query = 'INSERT 
                                 INTO $tabla 
@@ -147,31 +148,32 @@ class ControladorDinamicoTabla
 
     private static function fncUpdate(&$datos, &$tabla)
     {
-        $updateDatos = "";
-        $updateDatosPK = "";
-        $updateColumn = "";
-        $updateWhere = "";
+        $updateDatos = '';
+        $updateDatosPK = '';
+        $updateColumn = '';
+        $updateWhere = '';
 
         foreach ($datos as &$valor) {
             ++$i;
             if ($valor['Key'] == 'PRI') {
-                $updateDatosPK .= ",".($i+10)." => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
+                $updateDatosPK .= ','.($i + 10)." => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
                 if ($valor['Type'] == 'date') {
-                    $updateWhere .= "and ".$valor['Field']." = ?\n";
+                    $updateWhere .= 'and '.$valor['Field']." = ?\n";
                 } else {
-                    $updateWhere .= "and ".$valor['Field']." = ?\n";
+                    $updateWhere .= 'and '.$valor['Field']." = ?\n";
                 }
             } else {
                 $updateDatos .= ",$i => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
                 if ($valor['Type'] == 'date') {
-                    $updateColumn .= ",".$valor['Field']." = ?\n";
+                    $updateColumn .= ','.$valor['Field']." = ?\n";
                 } else {
-                    $updateColumn .= ",".$valor['Field']." = ?\n";
+                    $updateColumn .= ','.$valor['Field']." = ?\n";
                 }
             }
         }
         $updateDatos = substr($updateDatos, 1);
         $updateColumn = substr($updateColumn, 1);
+
         return "private function update()
         {
             \$datos = [
@@ -194,15 +196,16 @@ class ControladorDinamicoTabla
         }";
     }
 
-    private static function fncSave(&$datos) 
+    private static function fncSave(&$datos)
     {
-        $cadena = "";
+        $cadena = '';
         foreach ($datos as $valor) {
             if ($valor['Key'] == 'PRI') {
                 $cadena .= ",'".$valor['Field']."' => \$array['".$valor['Field']."']\n";
             }
         }
         $cadena = substr($cadena, 1);
+
         return "public function save(\$array)
         {
             \$insert = true;
@@ -302,13 +305,10 @@ class ControladorDinamicoTabla
     }
 }
 
-
 function update()
 {
     $datos = [
-        2 => ['tipo' => 's', 'dato' => $this->art_nombre]
-       ,3 => ['tipo' => 'i', 'dato' => $this->art_codfam]
-     ,101 => ['tipo' => 'i', 'dato' => $this->art_codart]
+        2 => ['tipo' => 's', 'dato' => $this->art_nombre], 3 => ['tipo' => 'i', 'dato' => $this->art_codfam], 101 => ['tipo' => 'i', 'dato' => $this->art_codart],
     ];
     $query = 'UPDATE ARTICULO 
                     SET art_nombre = ?
@@ -321,7 +321,7 @@ function update()
     $satus = ($link->hayError()) ? 1 : 0;
     $this->array = $this->getDatos();
     $link->close();
-    unset ($link);
+    unset($link);
 
     return $satus;
 }
