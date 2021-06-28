@@ -127,7 +127,6 @@ class ControladorDinamicoTabla
         return "private function insert()
                 {
                     $insertExtraVal
-                    echo var_dump(\$this->error);
                     \$datos = [$insertDatos];
                     \$query = 'INSERT 
                                 INTO $tabla 
@@ -215,20 +214,15 @@ class ControladorDinamicoTabla
             \$this->clearError();
             \$arrayUpdate = [$cadena];
             if (\$this->give(\$arrayUpdate) == 0) {
-                echo var_dump(\$this->getArray());
                 if (count(\$this->getArray()) == 1) { \$insert = false; }
             } else {
                 return 1;
             }
             \$this->array = \$arrayTemp;
             \$this->setDatos(\$array);
-            echo var_dump(\$this->getDatos());
-            echo var_dump(\$insert);
             if (\$insert) {
-                echo \"insert\n\";
                 return \$this->insert();
             } else {
-                echo \"update\n\";
                 return \$this->update();
             }
         }";
@@ -270,7 +264,6 @@ class ControladorDinamicoTabla
         }
         unset($valor);
         unset($i);
-        //echo var_dump($datos, true);
 
         return $datos;
     }

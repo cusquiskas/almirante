@@ -14,7 +14,7 @@
     $datos = $link->consulta('desc ESPECIFICACION', []);
     if ($link->hayError()) {
         $link->close();
-        die(json_encode($manejador->getListaErrores()));
+        die(json_encode(['success' => false, 'root' => $manejador->getListaErrores()]));
     }
     $link->close();
     unset($link);
@@ -22,12 +22,12 @@
     */
 
     $manejador = ControladorDinamicoTabla::set('ARTICULO');
-    if ($manejador->save(['art_nombre' => '']) > 0) {
-        die(json_encode($manejador->getListaErrores()));
+    if ($manejador->save([]) > 0) {
+        die(json_encode(['success' => false, 'root' => $manejador->getListaErrores()]));
     }
 
     if ($manejador->give([]) != 0) {
-        die(json_encode($manejador->getListaErrores()));
+        die(json_encode(['success' => false, 'root' => $manejador->getListaErrores()]));
     }
     //die(json_encode($manejador->getListaErrores()));
 
@@ -58,7 +58,7 @@
         }
     }*/
 
-    echo json_encode($listaArticulo);
+    echo json_encode(['success' => true, 'root' => $listaArticulo]);
 
     unset($manejador);
     unset($manFamilia);
