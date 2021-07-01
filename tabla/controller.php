@@ -157,14 +157,14 @@ class ControladorDinamicoTabla
             if ($valor['Key'] == 'PRI') {
                 $updateDatosPK .= ','.($i + 10)." => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
                 if ($valor['Type'] == 'date') {
-                    $updateWhere .= 'and '.$valor['Field']." = ?\n";
+                    $updateWhere .= 'and '.$valor['Field']." = STR_TO_DATE(?, \'%Y-%m-%d\')\n";
                 } else {
                     $updateWhere .= 'and '.$valor['Field']." = ?\n";
                 }
             } else {
                 $updateDatos .= ",$i => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
                 if ($valor['Type'] == 'date') {
-                    $updateColumn .= ','.$valor['Field']." = ?\n";
+                    $updateColumn .= ','.$valor['Field']." = STR_TO_DATE(?, \'%Y-%m-%d\')\n";
                 } else {
                     $updateColumn .= ','.$valor['Field']." = ?\n";
                 }
@@ -298,25 +298,5 @@ class ControladorDinamicoTabla
     }
 }
 
-function update()
-{
-    $datos = [
-        2 => ['tipo' => 's', 'dato' => $this->art_nombre], 3 => ['tipo' => 'i', 'dato' => $this->art_codfam], 101 => ['tipo' => 'i', 'dato' => $this->art_codart],
-    ];
-    $query = 'UPDATE ARTICULO 
-                    SET art_nombre = ?
-                       ,art_codfam = ?
-                WHERE 1 = 1
-                  and art_codart = ?';
-    $link = new ConexionSistema();
-    $link->ejecuta($query, $datos);
-    $this->error = $link->getListaErrores();
-    $satus = ($link->hayError()) ? 1 : 0;
-    $this->array = $this->getDatos();
-    $link->close();
-    unset($link);
-
-    return $satus;
-}
 ?>
 
