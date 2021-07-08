@@ -155,6 +155,10 @@ class ConexionSistema extends mysqli
         return new stmt($this->get(), $query);
     }
 
+    public function getApplication() {
+        return $this->apli;
+    }
+
     public function __construct()
     {
         $conf = new ConfiguracionSistema();

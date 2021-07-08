@@ -119,20 +119,29 @@ class ControladorDinamicoTabla
                 }
             }
         }
+        unset($valor);
+        $referencias = self::referenciasTabla($tabla);
+        $dependencias = "";
+        foreach ($referencias as &$valor) {
+            $dependencias .= "\$key = \$link->consulta('select count(0) as cuenta from ".$valor["tablaRef"]." where ".$valor["columnaRef"]." = \''.\$this->".$valor["columnaOri"].".'\'', []);\n";
+            $dependencias .= "if (\$key[0][\"cuenta\"] < 1) {\$this->error[] = ['tipo'=>'Validacion', 'Campo'=>'".$valor['columnaOri']."', 'Detalle' => 'Referencia no encontrada en ".$valor["tablaRef"]."'];}\n";
+        }
+        
         $insertDatos = substr($insertDatos, 1);
         $insertColumn = substr($insertColumn, 1);
         $insertValue = substr($insertValue, 1);
-        $insertExtraVal .= "\nif (count(\$this->error) > 0) return 1;\n";
+        $insertExtraVal .= "\nif (count(\$this->error) > 0) {\$link->close(); return 1;}\n";
 
         return "private function insert()
                 {
+                    \$link = new ConexionSistema();
+                    $dependencias
                     $insertExtraVal
                     \$datos = [$insertDatos];
                     \$query = 'INSERT 
                                 INTO $tabla 
                                     ($insertColumn) 
                              VALUES ($insertValue)';
-                    \$link = new ConexionSistema();
                     \$link->ejecuta(\$query, \$datos);
                     \$this->error = \$link->getListaErrores();
                     \$satus = (\$link->hayError()) ? 1 : 0;
@@ -228,14 +237,38 @@ class ControladorDinamicoTabla
         }";
     }
 
+    private static function referenciasTabla(&$tabla) {
+        $link = new ConexionSistema();
+        $esquema = $link->getApplication();
+        $datos = $link->consulta("select REFERENCED_TABLE_NAME as tablaRef, 
+                                         REFERENCED_COLUMN_NAME as columnaRef,
+                                         COLUMN_NAME as columnaOri
+                                    from information_schema.key_column_usage
+                                   where table_name = '$tabla'
+                                     and table_schema = '$esquema'
+                                     and referenced_table_name <> ''", []);
+        if ($link->hayError()) {
+            die(json_encode($link->getListaErrores()));
+        }
+        $link->close();
+        unset($link);
+        return $datos;
+    
+    }
+    
     private static function datosTabla(&$tabla)
     {
         $link = new ConexionSistema();
+        $apli = $link->getApplication();
+        $valid = $link->consulta("select table_name 
+                                    from information_schema.tables
+                                   where table_schema = '$apli' 
+                                     and table_name = '$tabla'",[]);
+        if (count($valid) < 1) die(json_encode(['success' => false, 'root' => "La tabla '$tabla' no se encuentra en la aplicación '$apli'"]));
         $datos = $link->consulta("desc $tabla", []);
 
         if ($link->hayError()) {
-            $link->close();
-            die(json_encode($manejador->getListaErrores()));
+            die(json_encode($link->getListaErrores()));
         }
         $link->close();
         unset($link);
@@ -294,8 +327,11 @@ class ControladorDinamicoTabla
             eval($cadena);
         }
 
+        
+
         return new $clsName();
     }
+
 }
 
 ?>

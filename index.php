@@ -9,9 +9,11 @@
 
     header('Content-Type: application/json; charset=utf-8');
 
-    /*
-    $link = new ConexionSistema();
-    $datos = $link->consulta('desc ESPECIFICACION', []);
+    /*$link = new ConexionSistema();
+    $datos = $link->consulta("select REFERENCED_TABLE_NAME as tabla, REFERENCED_COLUMN_NAME as columna
+    from information_schema.key_column_usage
+   where table_name = 'ARTICULO'
+     and referenced_table_name <> ''", []);
     if ($link->hayError()) {
         $link->close();
         die(json_encode(['success' => false, 'root' => $manejador->getListaErrores()]));
