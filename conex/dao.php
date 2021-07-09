@@ -135,9 +135,6 @@ class ConexionSistema extends mysqli
         $this->filas_afectadas = $stmt->affected_rows;
         if (count($stmt->error_list) > 0) {
             $this->lista_errores = $stmt->error_list;
-            foreach ($stmt->error_list as $detalle) {
-                new Excepcion($detalle['error'], 1);
-            }
         }
         $stmt->close();
     }
@@ -155,7 +152,8 @@ class ConexionSistema extends mysqli
         return new stmt($this->get(), $query);
     }
 
-    public function getApplication() {
+    public function getApplication()
+    {
         return $this->apli;
     }
 

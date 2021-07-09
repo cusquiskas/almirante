@@ -23,10 +23,10 @@
     die(json_encode($datos));
     */
 
-    $manejador = ControladorDinamicoTabla::set('ARTICULO');
-    if ($manejador->save([]) > 0) {
+    $manejador = ControladorDinamicoTabla::set('FAMILIA');
+    /*if ($manejador->save(['art_nombre' => 'Palto comida', 'art_codfam' => 1]) > 0) {
         die(json_encode(['success' => false, 'root' => $manejador->getListaErrores()]));
-    }
+    }*/
 
     if ($manejador->give([]) != 0) {
         die(json_encode(['success' => false, 'root' => $manejador->getListaErrores()]));

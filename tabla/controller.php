@@ -107,8 +107,8 @@ class ControladorDinamicoTabla
             } else {
                 if ($valor['Null'] == 'NO') {
                     $insertExtraVal .= "\nif (is_null(\$this->".$valor['Field'].")) {
-                                            \$this->error[] = ['tipo'=>'Validacion', 'Campo'=>'".$valor['Field']."', 'Detalle' => 'No puede ser NULO'];
-                                        }";
+                        \$this->error[] = ['tipo'=>'Validacion', 'Campo'=>'".$valor['Field']."', 'Detalle' => 'No puede ser NULO'];
+                    }";
                 }
                 $insertDatos .= ",$i => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
                 $insertColumn .= ','.$valor['Field'];
@@ -121,12 +121,12 @@ class ControladorDinamicoTabla
         }
         unset($valor);
         $referencias = self::referenciasTabla($tabla);
-        $dependencias = "";
+        $dependencias = '';
         foreach ($referencias as &$valor) {
-            $dependencias .= "\$key = \$link->consulta('select count(0) as cuenta from ".$valor["tablaRef"]." where ".$valor["columnaRef"]." = \''.\$this->".$valor["columnaOri"].".'\'', []);\n";
-            $dependencias .= "if (\$key[0][\"cuenta\"] < 1) {\$this->error[] = ['tipo'=>'Validacion', 'Campo'=>'".$valor['columnaOri']."', 'Detalle' => 'Referencia no encontrada en ".$valor["tablaRef"]."'];}\n";
+            $dependencias .= "\$key = \$link->consulta('select count(0) as cuenta from ".$valor['tablaRef'].' where '.$valor['columnaRef']." = \''.\$this->".$valor['columnaOri'].".'\'', []);\n";
+            $dependencias .= "if (\$key[0][\"cuenta\"] < 1) {\$this->error[] = ['tipo'=>'Validacion', 'Campo'=>'".$valor['columnaOri']."', 'Detalle' => 'Referencia no encontrada en ".$valor['tablaRef']."'];}\n";
         }
-        
+
         $insertDatos = substr($insertDatos, 1);
         $insertColumn = substr($insertColumn, 1);
         $insertValue = substr($insertValue, 1);
@@ -135,6 +135,7 @@ class ControladorDinamicoTabla
         return "private function insert()
                 {
                     \$link = new ConexionSistema();
+                    \$this->clearError();
                     $dependencias
                     $insertExtraVal
                     \$datos = [$insertDatos];
@@ -160,6 +161,7 @@ class ControladorDinamicoTabla
         $updateDatosPK = '';
         $updateColumn = '';
         $updateWhere = '';
+        $insertExtraVal = '';
 
         foreach ($datos as &$valor) {
             ++$i;
@@ -171,6 +173,12 @@ class ControladorDinamicoTabla
                     $updateWhere .= 'and '.$valor['Field']." = ?\n";
                 }
             } else {
+                if ($valor['Null'] == 'NO') {
+                    $insertExtraVal .= "\nif (is_null(\$this->".$valor['Field'].")) {
+                        \$this->error[] = ['tipo'=>'Validacion', 'Campo'=>'".$valor['Field']."', 'Detalle' => 'No puede ser NULO'];
+                    }";
+                }
+
                 $updateDatos .= ",$i => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
                 if ($valor['Type'] == 'date') {
                     $updateColumn .= ','.$valor['Field']." = STR_TO_DATE(?, \'%Y-%m-%d\')\n";
@@ -179,11 +187,24 @@ class ControladorDinamicoTabla
                 }
             }
         }
+        unset($valor);
+        $referencias = self::referenciasTabla($tabla);
+        $dependencias = '';
+        foreach ($referencias as &$valor) {
+            $dependencias .= "\$key = \$link->consulta('select count(0) as cuenta from ".$valor['tablaRef'].' where '.$valor['columnaRef']." = \''.\$this->".$valor['columnaOri'].".'\'', []);\n";
+            $dependencias .= "if (\$key[0][\"cuenta\"] < 1) {\$this->error[] = ['tipo'=>'Validacion', 'Campo'=>'".$valor['columnaOri']."', 'Detalle' => 'Referencia no encontrada en ".$valor['tablaRef']."'];}\n";
+        }
+
         $updateDatos = substr($updateDatos, 1);
         $updateColumn = substr($updateColumn, 1);
+        $insertExtraVal .= "\nif (count(\$this->error) > 0) {\$link->close(); return 1;}\n";
 
         return "private function update()
         {
+            \$this->clearError();
+            \$link = new ConexionSistema();
+            $dependencias
+            $insertExtraVal
             \$datos = [
                 $updateDatos
                 $updateDatosPK
@@ -192,7 +213,6 @@ class ControladorDinamicoTabla
                          SET $updateColumn
                        WHERE 1 = 1
                          $updateWhere';
-            \$link = new ConexionSistema();
             \$link->ejecuta(\$query, \$datos);
             \$this->error = \$link->getListaErrores();
             \$satus = (\$link->hayError()) ? 1 : 0;
@@ -218,16 +238,14 @@ class ControladorDinamicoTabla
         {
             \$insert = true;
             \$this->emptyClass();
-            \$arrayTemp = \$this->getArray();
             \$this->clearArray();
             \$this->clearError();
             \$arrayUpdate = [$cadena];
             if (\$this->give(\$arrayUpdate) == 0) {
-                if (count(\$this->getArray()) == 1) { \$insert = false; }
+                if (count(\$this->getArray()) == 1) { \$this->setDatos(\$this->getArray()[0]); \$insert = false; }
             } else {
                 return 1;
             }
-            \$this->array = \$arrayTemp;
             \$this->setDatos(\$array);
             if (\$insert) {
                 return \$this->insert();
@@ -237,7 +255,8 @@ class ControladorDinamicoTabla
         }";
     }
 
-    private static function referenciasTabla(&$tabla) {
+    private static function referenciasTabla(&$tabla)
+    {
         $link = new ConexionSistema();
         $esquema = $link->getApplication();
         $datos = $link->consulta("select REFERENCED_TABLE_NAME as tablaRef, 
@@ -252,10 +271,10 @@ class ControladorDinamicoTabla
         }
         $link->close();
         unset($link);
+
         return $datos;
-    
     }
-    
+
     private static function datosTabla(&$tabla)
     {
         $link = new ConexionSistema();
@@ -263,8 +282,10 @@ class ControladorDinamicoTabla
         $valid = $link->consulta("select table_name 
                                     from information_schema.tables
                                    where table_schema = '$apli' 
-                                     and table_name = '$tabla'",[]);
-        if (count($valid) < 1) die(json_encode(['success' => false, 'root' => "La tabla '$tabla' no se encuentra en la aplicación '$apli'"]));
+                                     and table_name = '$tabla'", []);
+        if (count($valid) < 1) {
+            die(json_encode(['success' => false, 'root' => "La tabla '$tabla' no se encuentra en la aplicación '$apli'"]));
+        }
         $datos = $link->consulta("desc $tabla", []);
 
         if ($link->hayError()) {
@@ -327,11 +348,8 @@ class ControladorDinamicoTabla
             eval($cadena);
         }
 
-        
-
         return new $clsName();
     }
-
 }
 
 ?>
