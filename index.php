@@ -24,9 +24,9 @@
     */
 
     $manejador = ControladorDinamicoTabla::set('ARTICULO');
-    /*if ($manejador->save(['art_nombre' => 'Palto comida', 'art_codfam' => 1]) > 0) {
+    if ($manejador->delete(['art_codart' => 4]) > 0) {
         die(json_encode(['success' => false, 'root' => $manejador->getListaErrores()]));
-    }*/
+    }
 
     if ($manejador->give([]) != 0) {
         die(json_encode(['success' => false, 'root' => $manejador->getListaErrores()]));

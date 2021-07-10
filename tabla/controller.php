@@ -51,7 +51,20 @@ class ControladorDinamicoTabla
         }
         $selectDatos = substr($selectDatos, 1);
 
-        return "private function select() { \$datos = [ $selectDatos ];\n \$query = 'select * from $tabla where 1 = 1 $selectQuery';\n \$link = new ConexionSistema(); \$this->array = \$link->consulta(\$query, \$datos); \$this->error = \$link->getListaErrores(); \$status = (\$link->hayError()) ? 1 : 0; \$link->close(); unset(\$link); return \$status; }\n";
+        return "private function select() { 
+            \$status = 0;
+            \$datos = [ $selectDatos ];
+            \$query = 'select * from $tabla where 1 = 1 $selectQuery';
+            \$link = new ConexionSistema(); 
+            \$this->array = \$link->consulta(\$query, \$datos); 
+            if (\$link->hayError()) {
+                \$status = 1;
+                \$this->error = \$link->getListaErrores(); 
+            }
+            \$link->close(); 
+            unset(\$link); 
+            return \$status; 
+        }\n";
     }
 
     private static function fncEmptyClass()
@@ -162,7 +175,7 @@ class ControladorDinamicoTabla
         $updateColumn = '';
         $updateWhere = '';
         $insertExtraVal = '';
-        $i=-1;
+        $i = -1;
         foreach ($datos as &$valor) {
             ++$i;
             if ($valor['Key'] == 'PRI') {
@@ -254,11 +267,13 @@ class ControladorDinamicoTabla
         }\n";
     }
 
-    private static function fncDelete(&$datos)
+    private static function fncDelete(&$datos, &$tabla)
     {
-        $dependencias ="";
-        $deletePK="";
-        $i=-1;
+        $dependencias = '';
+        $deletePK = '';
+        $i = -1;
+        $escape = "if (count(\$this->error) > 0) {\$link->close(); return 1;}\n";
+        $validacion = '';
         foreach ($datos as &$valor) {
             ++$i;
             if ($valor['Key'] == 'PRI') {
@@ -268,18 +283,44 @@ class ControladorDinamicoTabla
                 } else {
                     $deleteWhere .= 'and '.$valor['Field']." = ?\n";
                 }
+                $validacion .= 'if (is_null($this->'.$valor['Field'].")) { 
+                    \$this->error[] = ['tipo'=>'Validacion', 'Campo'=>'".$valor['Field']."', 'Detalle' => 'No puede ser NULO'];
+                } else {
+                    \$datosPK['".$valor['Field']."'] = \$this->".$valor['Field'].';
+                }';
             }
         }
         $deletePK = substr($deletePK, 1);
 
+        unset($valor);
+        $referencias = self::dependenciasTabla($tabla);
+        $dependencias = '';
+        foreach ($referencias as &$valor) {
+            $dependencias .= "\$key = \$link->consulta('select count(0) as cuenta from ".$valor['tablaRef'].' where '.$valor['columnaRef']." = \''.\$this->".$valor['columnaOri'].".'\'', []);\n";
+            $dependencias .= "if (\$key[0][\"cuenta\"] > 0) {\$this->error[] = ['tipo'=>'Validacion', 'Campo'=>'".$valor['columnaOri']."', 'Detalle' => 'Dependencia encontrada en ".$valor['tablaRef']."'];}\n";
+        }
+
         return "public function delete(\$array)
         {
             \$link = new ConexionSistema();
+            \$this->emptyClass();
+            \$this->clearError();
+            \$this->clearArray();
+            \$this->setDatos(\$array);
+            \$datosPK = [];
+            $validacion
+            $escape
+            \$this->emptyClass();
+            \$this->clearError();
+            \$this->clearArray();
+            if (\$this->give(\$datosPK) != 0) return 1;
+            \$this->setDatos(\$this->getArray()[0]);
             $dependencias
+            $escape
             \$datos = [
                 $deletePK
             ];
-            \$query = 'delete $tabla 
+            \$query = 'delete from $tabla 
                        WHERE 1 = 1
                          $deleteWhere';
             \$link->ejecuta(\$query, \$datos);
@@ -287,6 +328,7 @@ class ControladorDinamicoTabla
             \$satus = (\$link->hayError()) ? 1 : 0;
             \$this->array = \$this->getDatos();
             \$link->close();
+            \$this->clearArray();
             unset (\$link);
 
             return \$satus;
@@ -294,13 +336,13 @@ class ControladorDinamicoTabla
         ";
     }
 
-    private static function dependenciasTabla(&$tabla) 
-    { #busco si alguien está usando el dato maestro que quiero borrar
+    private static function dependenciasTabla(&$tabla)
+    { //busco si alguien está usando el dato maestro que quiero borrar
         $link = new ConexionSistema();
         $esquema = $link->getApplication();
         $datos = $link->consulta("select TABLE_NAME as tablaRef, 
-                                         REFERENCED_COLUMN_NAME as columnaRef,
-                                         COLUMN_NAME as columnaOri
+                                         COLUMN_NAME as columnaRef,
+                                         REFERENCED_COLUMN_NAME as columnaOri
                                     from information_schema.key_column_usage
                                    where REFERENCED_table_name = '$tabla'
                                      and table_schema = '$esquema'
@@ -313,9 +355,9 @@ class ControladorDinamicoTabla
 
         return $datos;
     }
-    
+
     private static function referenciasTabla(&$tabla)
-    { #busco si existe el dato maestro que intento guardar
+    { //busco si existe el dato maestro que intento guardar
         $link = new ConexionSistema();
         $esquema = $link->getApplication();
         $datos = $link->consulta("select REFERENCED_TABLE_NAME as tablaRef, 
@@ -401,7 +443,7 @@ class ControladorDinamicoTabla
             $cadena .= self::fncInsert($array, $tabla);
             $cadena .= self::fncUpdate($array, $tabla);
             $cadena .= self::fncSave($array);
-            $cadena .= self::fncDelete($array);
+            $cadena .= self::fncDelete($array, $tabla);
             $cadena .= self::fncConstruct();
             $cadena .= "}\n";
             //echo var_dump($cadena, true);
