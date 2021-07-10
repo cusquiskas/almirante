@@ -162,7 +162,7 @@ class ControladorDinamicoTabla
         $updateColumn = '';
         $updateWhere = '';
         $insertExtraVal = '';
-
+        $i=-1;
         foreach ($datos as &$valor) {
             ++$i;
             if ($valor['Key'] == 'PRI') {
@@ -201,7 +201,6 @@ class ControladorDinamicoTabla
 
         return "private function update()
         {
-            \$this->clearError();
             \$link = new ConexionSistema();
             $dependencias
             $insertExtraVal
@@ -252,11 +251,71 @@ class ControladorDinamicoTabla
             } else {
                 return \$this->update();
             }
-        }";
+        }\n";
     }
 
-    private static function referenciasTabla(&$tabla)
+    private static function fncDelete(&$datos)
     {
+        $dependencias ="";
+        $deletePK="";
+        $i=-1;
+        foreach ($datos as &$valor) {
+            ++$i;
+            if ($valor['Key'] == 'PRI') {
+                $deletePK .= ",$i => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
+                if ($valor['Type'] == 'date') {
+                    $deleteWhere .= 'and '.$valor['Field']." = STR_TO_DATE(?, \'%Y-%m-%d\')\n";
+                } else {
+                    $deleteWhere .= 'and '.$valor['Field']." = ?\n";
+                }
+            }
+        }
+        $deletePK = substr($deletePK, 1);
+
+        return "public function delete(\$array)
+        {
+            \$link = new ConexionSistema();
+            $dependencias
+            \$datos = [
+                $deletePK
+            ];
+            \$query = 'delete $tabla 
+                       WHERE 1 = 1
+                         $deleteWhere';
+            \$link->ejecuta(\$query, \$datos);
+            \$this->error = \$link->getListaErrores();
+            \$satus = (\$link->hayError()) ? 1 : 0;
+            \$this->array = \$this->getDatos();
+            \$link->close();
+            unset (\$link);
+
+            return \$satus;
+        }\n
+        ";
+    }
+
+    private static function dependenciasTabla(&$tabla) 
+    { #busco si alguien está usando el dato maestro que quiero borrar
+        $link = new ConexionSistema();
+        $esquema = $link->getApplication();
+        $datos = $link->consulta("select TABLE_NAME as tablaRef, 
+                                         REFERENCED_COLUMN_NAME as columnaRef,
+                                         COLUMN_NAME as columnaOri
+                                    from information_schema.key_column_usage
+                                   where REFERENCED_table_name = '$tabla'
+                                     and table_schema = '$esquema'
+                                     and referenced_table_name <> ''", []);
+        if ($link->hayError()) {
+            die(json_encode($link->getListaErrores()));
+        }
+        $link->close();
+        unset($link);
+
+        return $datos;
+    }
+    
+    private static function referenciasTabla(&$tabla)
+    { #busco si existe el dato maestro que intento guardar
         $link = new ConexionSistema();
         $esquema = $link->getApplication();
         $datos = $link->consulta("select REFERENCED_TABLE_NAME as tablaRef, 
@@ -342,6 +401,7 @@ class ControladorDinamicoTabla
             $cadena .= self::fncInsert($array, $tabla);
             $cadena .= self::fncUpdate($array, $tabla);
             $cadena .= self::fncSave($array);
+            $cadena .= self::fncDelete($array);
             $cadena .= self::fncConstruct();
             $cadena .= "}\n";
             //echo var_dump($cadena, true);
