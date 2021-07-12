@@ -7,10 +7,13 @@ class ControladorDinamicoTabla
         $cadena = '';
         foreach ($datos as &$valor) {
             $cadena .= 'private $'.$valor['Field'].";\n";
+            $cadena .= 'private $'.$valor['Field']."_signo = '=';\n";
+            $cadena .= 'private $'.$valor['Field']."_case = 'S';\n";
+
         }
         $cadena .= "private \$empty;\n";
-        $cadena .= "private \$array;\n";
-        $cadena .= "private \$error;\n";
+        $cadena .= "private \$array = [];\n";
+        $cadena .= "private \$error = [];\n";
 
         return $cadena;
     }
@@ -30,6 +33,8 @@ class ControladorDinamicoTabla
         $cadena = '';
         foreach ($datos as &$valor) {
             $cadena .= '$this->'.$valor['Field']." = (isset(\$array['".$valor['Field']."']) ? (".$valor['Type2'].") \$array['".$valor['Field']."'] : \$this->".$valor['Field'].");\n";
+            $cadena .= '$this->'.$valor['Field']."_signo = (isset(\$array['".$valor['Field']."_signo']) ? (string) \$array['".$valor['Field']."_signo'] : \$this->".$valor['Field']."_signo);\n";
+            $cadena .= '$this->'.$valor['Field']."_case = (isset(\$array['".$valor['Field']."_case']) ? (string) strtoupper(\$array['".$valor['Field']."_case']) : \$this->".$valor['Field']."_case);\n";
         }
 
         return "private function setDatos(\$array) { $cadena return 0;}\n";
@@ -44,17 +49,25 @@ class ControladorDinamicoTabla
             ++$i;
             $selectDatos .= ",$i => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
             if ($valor['Type'] == 'date') {
-                $selectQuery .= ' and IFNULL('.$valor['Field'].", \'!\') = IFNULL(STR_TO_DATE(?, \'%Y-%m-%d\'), IFNULL(".$valor['Field'].", \'!\'))\n";
+                $selectQuery .= ' and IFNULL('.$valor['Field'].", '!') \$this->".$valor['Field']."_signo IFNULL(STR_TO_DATE(?, \'%Y-%m-%d\'), IFNULL(".$valor['Field'].", '!'))\n";
             } else {
-                $selectQuery .= ' and IFNULL('.$valor['Field'].", \'!\') = IFNULL(?, IFNULL(".$valor['Field'].", \'!\'))\n";
+                if ($valor['Type3'] == "s") {
+                $selectQuery .= ' and IFNULL($'.$valor['Field'].'_upperI '.$valor['Field']." $".$valor['Field']."_upperF , '!') \$this->".$valor['Field']."_signo IFNULL( $".$valor['Field']."_upperI ? $".$valor['Field']."_upperF , IFNULL(".$valor['Field'].", '!'))\n";
+                $variablesInternas .= "\$".$valor['Field']."_upperI = (\$this->".$valor['Field']."_case == 'N')?'UPPER(':'';\n"; 
+                $variablesInternas .= "\$".$valor['Field']."_upperF = (\$this->".$valor['Field']."_case == 'N')?')':'';\n"; 
+                } else {
+                    $selectQuery .= ' and IFNULL('.$valor['Field'].", '!') \$this->".$valor['Field']."_signo IFNULL( ? , IFNULL(".$valor['Field'].", '!'))\n";
+                }
             }
+            
         }
         $selectDatos = substr($selectDatos, 1);
 
         return "private function select() { 
             \$status = 0;
-            \$datos = [ $selectDatos ];
-            \$query = 'select * from $tabla where 1 = 1 $selectQuery';
+            $variablesInternas\n
+            \$datos = [ $selectDatos ];\n
+            \$query = \"select * from $tabla where 1 = 1 \n$selectQuery\";
             \$link = new ConexionSistema(); 
             \$this->array = \$link->consulta(\$query, \$datos); 
             if (\$link->hayError()) {
@@ -452,6 +465,7 @@ class ControladorDinamicoTabla
 
         return new $clsName();
     }
+    
 }
 
 ?>
