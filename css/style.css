@@ -1,0 +1,36 @@
+template {
+  display: inline;
+}
+
+.xx {
+  display: none;
+}
+
+header {
+  background-color: #c8d1ef;
+  max-height: 130px;
+  width: 100%;
+  padding-top: 1px;
+  padding-right: 0;
+  padding-bottom: 1px;
+  padding-left: 0;
+}
+
+footer {
+  background-color: #c8d1ef;
+  max-height: 620px;
+  width: 100%;
+  padding-top: 1px;
+  padding-right: 0;
+  padding-bottom: 40px;
+  padding-left: 0;
+}
+
+body {
+  background-image: url("img/imagen.gif");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: 30%;
+  background-color: white;
+}
