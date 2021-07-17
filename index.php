@@ -14,6 +14,7 @@
     <link rel="stylesheet" type="text/css" media="screen" href="<?php echo Cache::ruta('css/style.css'); ?>">
 </head>
 <body>
+    <template id="alertBox"></template>
     <template id="header"></template>
     <template id="body"></template>
     <template id="footer"></template>
