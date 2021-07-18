@@ -25,13 +25,14 @@ function iniciarApp() {
 function validaErroresCBK (obj) {
     let msg = "<div class='alert alert-{{tipo}}'><button type='button' class='close' data-dismiss='alert'>&times;</button><strong>{{Campo}}</strong> {{Detalle}}.</div>";
     for (let i=0; i<obj.length; i++) {
-        if (obj[i].name) 
         if (obj[i].type) {
             obj[i].Detalle = (obj[i].type=='required'?'No puede estar vacío':'Error desconocido');
             obj[i].Campo = obj[i].label||obj[i].name; 
             obj[i].tipo = (obj[i].type=='required'?'Validacion':'Error');
         }
         obj[i].tipo = (obj[i].tipo=='Confirmacion'?'success':(obj[i].tipo=='Validacion'?'warning':'danger'));
+        if (!obj[i].Detalle) obj[i].Detalle = JSON.stringify(obj[i]);
+        if (!obj[i].Campo) obj[i].Campo = "";
         $(".alertBoxMessage").append(msg.reemplazaMostachos(obj[i]));
     }
 }
