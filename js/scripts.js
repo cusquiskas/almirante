@@ -22,15 +22,11 @@ function iniciarApp() {
     Moduls.getAlertbox().load({ url: 'content/alerta.html', script: false});
 }
 
-function validaErroresCBK (suc, obj) {
-    let ok = "<div class='alert alert-success'><button type='button' class='close' data-dismiss='alert'>&times;</button><strong>¡Ok!</strong> {{mensage}}.</div>";
-    let ko = "<div class='alert alert-danger'><button type='button' class='close' data-dismiss='alert'>&times;</button><strong>¡Error!</strong> {{mensage}}.</div>"
+function validaErroresCBK (obj) {
+    let msg = "<div class='alert alert-{{tipo}}'><button type='button' class='close' data-dismiss='alert'>&times;</button><strong>{{Campo}}</strong> {{Detalle}}.</div>";
     for (let i=0; i<obj.length; i++) {
-        if (suc) {
-            $(".alertBoxMessage").append(ok.reemplazaMostachos(obj[i].mensage));
-        } else {
-            $(".alertBoxMessage").append(ko.reemplazaMostachos(obj[i].mensage));
-        }
+        obj[i].tipo = (obj[i].tipo=='Confirmacion'?'success':(obj[i].tipo=='Validacion'?'warning':'danger'));
+        $(".alertBoxMessage").append(msg.reemplazaMostachos(obj[i]));
     }
 }
 
