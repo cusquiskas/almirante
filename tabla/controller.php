@@ -163,10 +163,10 @@ class ControladorDinamicoTabla
                     $dependencias
                     $insertExtraVal
                     \$datos = [$insertDatos];
-                    \$query = 'INSERT 
+                    \$query = \"INSERT 
                                 INTO $tabla 
                                     ($insertColumn) 
-                             VALUES ($insertValue)';
+                             VALUES ($insertValue)\";
                     \$link->ejecuta(\$query, \$datos);
                     \$this->error = \$link->getListaErrores();
                     \$satus = (\$link->hayError()) ? 1 : 0;
@@ -232,10 +232,10 @@ class ControladorDinamicoTabla
                 $updateDatos
                 $updateDatosPK
             ];
-            \$query = 'UPDATE $tabla 
+            \$query = \"UPDATE $tabla 
                          SET $updateColumn
                        WHERE 1 = 1
-                         $updateWhere';
+                         $updateWhere\";
             \$link->ejecuta(\$query, \$datos);
             \$this->error = \$link->getListaErrores();
             \$satus = (\$link->hayError()) ? 1 : 0;
