@@ -1,10 +1,10 @@
 <?php
 
- require_once 'conex/conf.php';  //información crítica del sistema
 class Cache
 {
     public function ruta($url)
     {
+        require_once 'conex/conf.php';  //información crítica del sistema
         $timestamp = '';
         $conf = new ConfiguracionSistema();
         $pa = $conf->getHome().$url;
@@ -16,5 +16,15 @@ class Cache
         }
 
         return "$url?$timestamp";
+    }
+}
+
+class Fecha
+{
+    public static function formatea($fecha, $output)
+    {
+        $dt = new DateTime($fecha);
+
+        return $dt->format($output);
     }
 }
