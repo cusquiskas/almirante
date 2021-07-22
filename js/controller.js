@@ -429,13 +429,13 @@ class ModulController {
             $(donde).append(script);
             if (typeof objeto.class === "string" && objeto.class !== "") {
                 clase = eval(objeto.class);
-                this.script = new clase(objeto.parametros);
+                this.script = new clase(objeto.parametros||{});
             } else {
                 try {
                     clase = eval(url.substr(url.lastIndexOf('/')+1).slice(0,-3));
                 } catch (e) {}
                 try {
-                    if (clase) this.script = new clase(objeto.parametros);
+                    if (clase) this.script = new clase(objeto.parametros||{});
                 } catch (e) { throw e; }
             }
         }

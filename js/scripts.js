@@ -37,4 +37,58 @@ function validaErroresCBK (obj) {
     }
 }
 
+// Funcion para construir la modal, recibe un objeto modal con parametros
+function construirModal(modal) {
+    let param = JSON.parse(JSON.stringify(modal));
+    var $myModal = $('#myModal');
+    $myModal.on('hidden.bs.modal', function () {
+    if (Moduls.getModalbody) Moduls.getModalbody().load({ url: '/portalapp/res/blanco.html', script: false });
+    if (modal.ocultarXCerrar) {
+        $('button.close', $myModal).hide();
+    } else {
+        $('button.close', $myModal).show();
+        if (typeof (modal.xfunction) === 'function') {
+            $('button.close', $myModal).click(function () {
+                modal.xfunction();
+            });
+        }
+    }
+    $('.modal-content', $myModal).css({ "width": 'auto', 'height': 'auto', 'margin': '0 auto' });
+    if (modal.w && modal.w != 0)
+        $('.modal-content', $myModal).css("max-width", modal.w);
+    else
+        $('.modal-content', $myModal).css("max-width", 'unset');
+    if (modal.h && modal.h != 0)
+        $('.modal-content', $myModal).css("max-height", modal.h);
+    else
+        $('.modal-content', $myModal).css("max-height", 'unset');
+
+    $('.modal-title', $myModal).html(!modal.title ? "<br />" : modal.title);
+    var $myModalFooter = $('.modal-footer', $myModal).empty();
+    if (modal.oktext) {
+        if (!(typeof (modal.okfunction) === 'function')) {
+            modal.okfunction = function () {
+                cerrarModalIE($myModal);
+            };
+        }
+        $myModalFooter.append('<button id="okfunction" type="button" class="btn btn-primary">' + modal.oktext + '</button>');
+        $("#okfunction").on("click", function () { modal.okfunction(); return false; });
+    }
+    if (modal.canceltext) {
+        if (!(typeof (modal.cancelfunction) === 'function')) {
+            modal.cancelfunction = function () { cerrarModalIE($myModal); };
+        }
+        $myModalFooter.append('<button id="cancelfunction" type="button" class="btn btn-default">' + modal.canceltext + '</button>');
+        $("#cancelfunction").on("click", function () { modal.cancelfunction(); return false; });
+    }
+    
+    $myModal.removeClass('fade');
+    $myModal.modal({ show: true });
+    
+    //click a la "x" de cerrar modal
+    $('.close', $myModal).click(function () {
+        cerrarModalIE($myModal);
+    });
+}
+
 
