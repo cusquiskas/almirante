@@ -81,11 +81,10 @@ function construirModal(modal) {
     }
     if (modal.canceltext) {
         if (!(typeof (modal.cancelfunction) === 'function')) {
-            $myModal.hide();
-        } else {
-            $myModalFooter.append('<button id="cancelfunction" type="button" class="btn btn-default">' + modal.canceltext + '</button>');
-            $("#cancelfunction").on("click", function () { modal.cancelfunction(); return false; });
+            modal.cancelfunction = function () { $myModal.hide() };
         }
+        $myModalFooter.append('<button id="cancelfunction" type="button" class="btn btn-default">' + modal.canceltext + '</button>');
+        $("#cancelfunction").on("click", function () { modal.cancelfunction(); return false; });
     }
     $myModal.removeClass('fade');
     $myModal.show();
