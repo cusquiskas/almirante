@@ -5,10 +5,10 @@ let Moduls = [];
 function iniciarApp() {
     console.log('scripts.js -> iniciarApp()');
     Template = document.getElementsByTagName('template');
-    if ( Template){
+    if (Template) {
         for (let i = 0; i < Template.length; i++) {
             Moduls[Template[i].id] = new ModulController(Template[i], null);
-            Moduls['get'+Template[i].id.substr(0,1).toUpperCase()+Template[i].id.substr(1).toLowerCase()] = function () { return Moduls[Template[i].id]; };
+            Moduls['get' + Template[i].id.substr(0, 1).toUpperCase() + Template[i].id.substr(1).toLowerCase()] = function () { return Moduls[Template[i].id]; };
         }
     }
     //Template = undefined;
@@ -16,21 +16,22 @@ function iniciarApp() {
     //for (let i = 0; i < document.forms.length; i++) Moduls.Forms[document.forms[i].name] = new FormController(document.forms[i], null);
     Moduls.constants = {};
     Moduls.constants.initDate = new Date;
-    Moduls.getFooter().load  ({ url: 'content/footer.html', script: false});
-    Moduls.getHeader().load  ({ url: 'content/header.html', script: false});
-    Moduls.getBody().load    ({ url: 'content/blanco.html', script: false});
-    Moduls.getAlertbox().load({ url: 'content/alerta.html', script: false});
+    Moduls.getFooter().load({ url: 'content/footer.html', script: false });
+    Moduls.getHeader().load({ url: 'content/header.html', script: false });
+    Moduls.getBody().load({ url: 'content/blanco.html', script: false });
+    Moduls.getAlertbox().load({ url: 'content/alerta.html', script: false });
+    Moduls.getModal().load({ url: 'content/modal.html', script: false });
 }
 
-function validaErroresCBK (obj) {
+function validaErroresCBK(obj) {
     let msg = "<div class='alert alert-{{tipo}}'><button type='button' class='close' data-dismiss='alert'>&times;</button><strong>{{Campo}}</strong> {{Detalle}}.</div>";
-    for (let i=0; i<obj.length; i++) {
+    for (let i = 0; i < obj.length; i++) {
         if (obj[i].type) {
-            obj[i].Detalle = (obj[i].type=='required'?'No puede estar vacío':'Error desconocido');
-            obj[i].Campo = obj[i].label||obj[i].name; 
-            obj[i].tipo = (obj[i].type=='required'?'Validacion':'Error');
+            obj[i].Detalle = (obj[i].type == 'required' ? 'No puede estar vacío' : 'Error desconocido');
+            obj[i].Campo = obj[i].label || obj[i].name;
+            obj[i].tipo = (obj[i].type == 'required' ? 'Validacion' : 'Error');
         }
-        obj[i].tipo = (obj[i].tipo=='Confirmacion'?'success':(obj[i].tipo=='Validacion'?'warning':'danger'));
+        obj[i].tipo = (obj[i].tipo == 'Confirmacion' ? 'success' : (obj[i].tipo == 'Validacion' ? 'warning' : 'danger'));
         if (!obj[i].Detalle) obj[i].Detalle = JSON.stringify(obj[i]);
         if (!obj[i].Campo) obj[i].Campo = "";
         $(".alertBoxMessage").append(msg.reemplazaMostachos(obj[i]));
@@ -40,9 +41,13 @@ function validaErroresCBK (obj) {
 // Funcion para construir la modal, recibe un objeto modal con parametros
 function construirModal(modal) {
     let param = JSON.parse(JSON.stringify(modal));
-    var $myModal = $('#myModal');
+
+    let $myModal = $('#myModal');
+
     $myModal.on('hidden.bs.modal', function () {
-    if (Moduls.getModalbody) Moduls.getModalbody().load({ url: '/portalapp/res/blanco.html', script: false });
+        if (Moduls.getModalbody) Moduls.getModalbody().load({ url: '/portalapp/res/blanco.html', script: false });
+    });
+
     if (modal.ocultarXCerrar) {
         $('button.close', $myModal).hide();
     } else {
@@ -64,7 +69,7 @@ function construirModal(modal) {
         $('.modal-content', $myModal).css("max-height", 'unset');
 
     $('.modal-title', $myModal).html(!modal.title ? "<br />" : modal.title);
-    var $myModalFooter = $('.modal-footer', $myModal).empty();
+    let $myModalFooter = $('.modal-footer', $myModal).empty();
     if (modal.oktext) {
         if (!(typeof (modal.okfunction) === 'function')) {
             modal.okfunction = function () {
@@ -76,19 +81,17 @@ function construirModal(modal) {
     }
     if (modal.canceltext) {
         if (!(typeof (modal.cancelfunction) === 'function')) {
-            modal.cancelfunction = function () { cerrarModalIE($myModal); };
+            $myModal.hide();
+        } else {
+            $myModalFooter.append('<button id="cancelfunction" type="button" class="btn btn-default">' + modal.canceltext + '</button>');
+            $("#cancelfunction").on("click", function () { modal.cancelfunction(); return false; });
         }
-        $myModalFooter.append('<button id="cancelfunction" type="button" class="btn btn-default">' + modal.canceltext + '</button>');
-        $("#cancelfunction").on("click", function () { modal.cancelfunction(); return false; });
     }
-    
     $myModal.removeClass('fade');
-    $myModal.modal({ show: true });
-    
+    $myModal.show();
+
     //click a la "x" de cerrar modal
     $('.close', $myModal).click(function () {
-        cerrarModalIE($myModal);
+        $myModal.hide();
     });
 }
-
-

@@ -464,7 +464,7 @@ class ModulController {
             me.Forms = [];
             let formularios = me.template.getElementsByTagName('form');
             for (let i = 0; i < formularios.length; i++) if (formularios[i].name) me.Forms[formularios[i].name] = new FormController(formularios[i], me);
-            if (me.Forms) {
+            if (me.Forms && me.Forms.length > 0) {
                 Moduls[nombre]().getForms = function () { return yo.Forms; };
                 Moduls[nombre]().getForm = function (name) { return yo.Forms[name]; };
             }
