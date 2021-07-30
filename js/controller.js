@@ -429,13 +429,13 @@ class ModulController {
             $(donde).append(script);
             if (typeof objeto.class === "string" && objeto.class !== "") {
                 clase = eval(objeto.class);
-                this.script = new clase(objeto.parametros||{});
+                this.script = new clase(this, objeto.parametros||{});
             } else {
                 try {
                     clase = eval(url.substr(url.lastIndexOf('/')+1).slice(0,-3));
                 } catch (e) {}
                 try {
-                    if (clase) this.script = new clase(objeto.parametros||{});
+                    if (clase) this.script = new clase(this, objeto.parametros||{});
                 } catch (e) { throw e; }
             }
         }
@@ -459,8 +459,6 @@ class ModulController {
                     Moduls[nombre2] = function () { return yo.child[Template[i].id]; };
                 }
             }
-            me.enlazarScript(objeto, me.name);
-            if (me.script && Moduls[nombre]()) Moduls[nombre]().getScript = function () { return yo.script; };
             me.Forms = [];
             let formularios = me.template.getElementsByTagName('form');
             for (let i = 0; i < formularios.length; i++) if (formularios[i].name) me.Forms[formularios[i].name] = new FormController(formularios[i], me);
@@ -468,6 +466,8 @@ class ModulController {
                 Moduls[nombre]().getForms = function () { return yo.Forms; };
                 Moduls[nombre]().getForm = function (name) { return yo.Forms[name]; };
             }
+            me.enlazarScript(objeto, me.name);
+            if (me.script && Moduls[nombre]()) Moduls[nombre]().getScript = function () { return yo.script; };
         });
     }
 
