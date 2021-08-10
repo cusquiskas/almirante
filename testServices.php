@@ -4,8 +4,8 @@
 
     require_once 'conex/conf.php';  //información crítica del sistema
     require_once 'conex/dao.php';   //control de comunicación con la base de datos MySQL
-
     require_once 'tabla/controller.php';   //genera la clase de una tabla dinámicamente bajo petición
+    require_once 'conex/sesion.php';
 
     header('Content-Type: application/json; charset=utf-8');
 
