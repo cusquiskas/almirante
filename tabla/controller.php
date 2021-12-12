@@ -190,7 +190,7 @@ class ControladorDinamicoTabla
         foreach ($datos as &$valor) {
             ++$i;
             if ($valor['Key'] == 'PRI') {
-                $updateDatosPK .= ','.($i + 10)." => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
+                $updateDatosPK .= ','.($i + 1000)." => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
                 if ($valor['Type'] == 'date') {
                     $updateWhere .= 'and '.$valor['Field']." = STR_TO_DATE(?, '%d/%m/%Y')\n";
                 } else {
