@@ -416,8 +416,9 @@ class ControladorDinamicoTabla
             ++$i;
             //$datos[$i]['Type2'] = $datos[$i]['Type'];
             $datos[$i]['Type2'] = substr($valor['Type'], 0, stripos($valor['Type'], '('));
-            if ($datos[$i]['Type2'] == 'int') {
+            if ($datos[$i]['Type2'] == 'int' || $datos[$i]['Type2'] == 'tinyint') {
                 $datos[$i]['Type3'] = 'i';
+                $datos[$i]['Type2'] = 'int';
             }
             if ($datos[$i]['Type2'] == 'varchar' || $datos[$i]['Type'] == 'date') {
                 $datos[$i]['Type3'] = 's';
