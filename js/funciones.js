@@ -195,7 +195,7 @@ String.prototype.esDNI = function (t) {
 
 String.prototype.reemplazaMostachos = function (obj) {
   let cad = this;
-  for (let chd in obj) cad = cad.replace(new RegExp('{{' + chd + '}}', 'g'), (obj[chd] || ''));
+  for (let chd in obj) cad = cad.replace(new RegExp('{{' + chd + '}}', 'g'), ((obj[chd] || obj[chd] === 0 || obj[chd] === false) ? obj[chd] : ''));
   return cad;
 }
 
