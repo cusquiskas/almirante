@@ -47,9 +47,11 @@ class ControladorDinamicoTabla
         foreach ($datos as &$valor) {
             ++$i;
             $selectDatos .= ",$i => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
-            if ($valor['Type'] == 'date') {
-                $selectQuery .= ' and IFNULL('.$valor['Field'].", '!') \$this->".$valor['Field']."_signo IFNULL(STR_TO_DATE(?, '%d/%m/%Y'), IFNULL(".$valor['Field'].", '!'))\n";
-            } else {
+            if ($valor['Type'] == 'date'):
+                $selectQuery .= ' and IFNULL('.$valor['Field'].", '!') \$this->".$valor['Field']."_signo IFNULL(STR_TO_DATE(?, '%Y-%m-%d'), IFNULL(".$valor['Field'].", '!'))\n";
+            elseif ($valor['Type'] == 'datetime'):
+                $selectQuery .= ' and IFNULL('.$valor['Field'].", '!') \$this->".$valor['Field']."_signo IFNULL(STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s'), IFNULL(".$valor['Field'].", '!'))\n";
+            else:
                 if ($valor['Type3'] == 's') {
                     $selectQuery .= ' and IFNULL($'.$valor['Field'].'_upperI '.$valor['Field'].' $'.$valor['Field']."_upperF , '!') \$this->".$valor['Field'].'_signo IFNULL( $'.$valor['Field'].'_upperI ? $'.$valor['Field'].'_upperF , IFNULL('.$valor['Field'].", '!'))\n";
                     $variablesInternas .= '$'.$valor['Field'].'_upperI = ($this->'.$valor['Field']."_case == 'N')?'UPPER(':'';\n";
@@ -57,7 +59,7 @@ class ControladorDinamicoTabla
                 } else {
                     $selectQuery .= ' and IFNULL('.$valor['Field'].", '!') \$this->".$valor['Field'].'_signo IFNULL( ? , IFNULL('.$valor['Field'].", '!'))\n";
                 }
-            }
+            endif;
         }
         $selectDatos = substr($selectDatos, 1);
 
@@ -136,11 +138,13 @@ class ControladorDinamicoTabla
                 }
                 $insertDatos .= ",$i => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
                 $insertColumn .= ','.$valor['Field'];
-                if ($valor['Type'] == 'date') {
-                    $insertValue .= ",STR_TO_DATE(?, '%d/%m/%Y')\n";
-                } else {
+                if ($valor['Type'] == 'date'):
+                    $insertValue .= ",STR_TO_DATE(?, '%Y-%m-%d')\n";
+                elseif ($valor['Type'] == 'datetime'):
+                        $insertValue .= ",STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s')\n";
+                else:
                     $insertValue .= ",?\n";
-                }
+                endif;
             }
         }
         unset($valor);
@@ -191,11 +195,13 @@ class ControladorDinamicoTabla
             ++$i;
             if ($valor['Key'] == 'PRI') {
                 $updateDatosPK .= ','.($i + 1000)." => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
-                if ($valor['Type'] == 'date') {
-                    $updateWhere .= 'and '.$valor['Field']." = STR_TO_DATE(?, '%d/%m/%Y')\n";
-                } else {
+                if ($valor['Type'] == 'date'):
+                    $updateWhere .= 'and '.$valor['Field']." = STR_TO_DATE(?, '%Y-%m-%d')\n";
+                elseif ($valor['Type'] == 'datetime'):
+                    $updateWhere .= 'and '.$valor['Field']." = STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s')\n";
+                else:
                     $updateWhere .= 'and '.$valor['Field']." = ?\n";
-                }
+                endif;
             } else {
                 if ($valor['Null'] == 'NO') {
                     $insertExtraVal .= "\nif (is_null(\$this->".$valor['Field'].")) {
@@ -204,11 +210,13 @@ class ControladorDinamicoTabla
                 }
 
                 $updateDatos .= ",$i => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
-                if ($valor['Type'] == 'date') {
-                    $updateColumn .= ','.$valor['Field']." = STR_TO_DATE(?, '%d/%m/%Y')\n";
-                } else {
+                if ($valor['Type'] == 'date'):
+                    $updateColumn .= ','.$valor['Field']." = STR_TO_DATE(?, '%Y-%m-%d')\n";
+                elseif ($valor['Type'] == 'datetime'):
+                    $updateColumn .= ','.$valor['Field']." = STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s')\n";
+                else:
                     $updateColumn .= ','.$valor['Field']." = ?\n";
-                }
+                endif;
             }
         }
         unset($valor);
@@ -289,11 +297,13 @@ class ControladorDinamicoTabla
             ++$i;
             if ($valor['Key'] == 'PRI') {
                 $deletePK .= ",$i => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
-                if ($valor['Type'] == 'date') {
-                    $deleteWhere .= 'and '.$valor['Field']." = STR_TO_DATE(?, '%d/%m/%Y')\n";
-                } else {
+                if ($valor['Type'] == 'date'):
+                    $deleteWhere .= 'and '.$valor['Field']." = STR_TO_DATE(?, '%Y-%m-%d')\n";
+                elseif ($valor['Type'] == 'datetime'):
+                    $deleteWhere .= 'and '.$valor['Field']." = STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s')\n";
+                else:
                     $deleteWhere .= 'and '.$valor['Field']." = ?\n";
-                }
+                endif;
                 $validacion .= 'if (is_null($this->'.$valor['Field'].")) { 
                     \$this->error[] = ['tipo'=>'Validacion', 'Campo'=>'".$valor['Field']."', 'Detalle' => 'No puede ser NULO'];
                 } else {
@@ -420,7 +430,7 @@ class ControladorDinamicoTabla
                 $datos[$i]['Type3'] = 'i';
                 $datos[$i]['Type2'] = 'int';
             }
-            if ($datos[$i]['Type2'] == 'varchar' || $datos[$i]['Type'] == 'date') {
+            if ($datos[$i]['Type2'] == 'varchar' || $datos[$i]['Type'] == 'date' || $datos[$i]['Type'] == 'datetime') {
                 $datos[$i]['Type3'] = 's';
                 $datos[$i]['Type2'] = 'string';
             }
