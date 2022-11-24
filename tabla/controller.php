@@ -173,13 +173,13 @@ class ControladorDinamicoTabla
                              VALUES ($insertValue)\";
                     \$link->ejecuta(\$query, \$datos);
                     \$this->error = \$link->getListaErrores();
-                    \$satus = (\$link->hayError()) ? 1 : 0;
+                    \$status = (\$link->hayError()) ? 1 : 0;
                     $insertExtraId
                     \$this->array = \$this->getDatos();
                     \$link->close();
                     unset (\$link);
 
-                    return \$satus;
+                    return \$status;
                 }\n";
     }
 
@@ -430,7 +430,7 @@ class ControladorDinamicoTabla
                 $datos[$i]['Type3'] = 'i';
                 $datos[$i]['Type2'] = 'int';
             }
-            if ($datos[$i]['Type2'] == 'varchar' || $datos[$i]['Type'] == 'date' || $datos[$i]['Type'] == 'datetime') {
+            if ($datos[$i]['Type'] == 'text' || $datos[$i]['Type2'] == 'varchar' || $datos[$i]['Type'] == 'date' || $datos[$i]['Type'] == 'datetime') {
                 $datos[$i]['Type3'] = 's';
                 $datos[$i]['Type2'] = 'string';
             }
