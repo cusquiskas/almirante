@@ -6,7 +6,7 @@ class ControladorDinamicoTabla
     {
         $cadena = '';
         foreach ($datos as &$valor) {
-            $cadena .= 'private $'.$valor['Field'].";\n";
+            $cadena .= 'private $'.$valor['Field']." = null;\n";
             $cadena .= 'private $'.$valor['Field']."_signo = '=';\n";
             $cadena .= 'private $'.$valor['Field']."_case = 'S';\n";
         }
@@ -24,18 +24,18 @@ class ControladorDinamicoTabla
             $cadena .= ",'".$valor['Field']."' => \$this->".$valor['Field']."\n";
         }
 
-        return $getDatos = 'private function getDatos(){return [ '.substr($cadena, 1)." ];}\n";
+        return $getDatos = 'public function getDatos(){return [ '.substr($cadena, 1)." ];}\n";
     }
 
     private static function fncSetDatos(&$datos)
     {
         $cadena = '';
         foreach ($datos as &$valor) {
-            $cadena .= '$this->'.$valor['Field']." = (isset(\$array['".$valor['Field']."']) ? (".$valor['Type2'].") \$array['".$valor['Field']."'] : \$this->".$valor['Field'].");\n";
-            $cadena .= '$this->'.$valor['Field']."_signo = (isset(\$array['".$valor['Field']."_signo']) ? (string) \$array['".$valor['Field']."_signo'] : \$this->".$valor['Field']."_signo);\n";
-            $cadena .= '$this->'.$valor['Field']."_case = (isset(\$array['".$valor['Field']."_case']) ? (string) strtoupper(\$array['".$valor['Field']."_case']) : \$this->".$valor['Field']."_case);\n";
+            $cadena .= '$this->'.$valor['Field']." =       (array_key_exists('".$valor['Field']."',       \$array) ? (is_null(\$array['".$valor['Field']."'])?null:(".$valor['Type2'].") \$array['".$valor['Field']."']) : \$this->".$valor['Field'].");\n";
+            $cadena .= '$this->'.$valor['Field']."_signo = (array_key_exists('".$valor['Field']."_signo', \$array) ? (string) \$array['".$valor['Field']."_signo'] : '=');\n";
+            $cadena .= '$this->'.$valor['Field']."_case  = (array_key_exists('".$valor['Field']."_case',  \$array) ? (string) strtoupper(\$array['".$valor['Field']."_case']) : 'S');\n";
         }
-
+        
         return "private function setDatos(\$array) { $cadena return 0;}\n";
     }
 
@@ -128,7 +128,7 @@ class ControladorDinamicoTabla
             if ($valor['Key'] == 'PRI' && $valor['Extra'] == 'auto_increment') {
                 $insertExtraId = "if (\$status == 0) {
                                     \$key = \$link->consulta('select last_insert_id() id', []);
-                                    \$this->".$valor['Field']." = $key[0]['id'];
+                                    \$this->".$valor['Field']." = \$key[0]['id'];
                                 }\n";
             } else {
                 if ($valor['Null'] == 'NO') {
@@ -173,13 +173,13 @@ class ControladorDinamicoTabla
                              VALUES ($insertValue)\";
                     \$link->ejecuta(\$query, \$datos);
                     \$this->error = \$link->getListaErrores();
-                    \$status = (\$link->hayError()) ? 1 : 0;
+                    \$satus = (\$link->hayError()) ? 1 : 0;
                     $insertExtraId
                     \$this->array = \$this->getDatos();
                     \$link->close();
                     unset (\$link);
 
-                    return \$status;
+                    return \$satus;
                 }\n";
     }
 
@@ -277,6 +277,7 @@ class ControladorDinamicoTabla
             } else {
                 return 1;
             }
+            
             \$this->setDatos(\$array);
             if (\$insert) {
                 return \$this->insert();
@@ -430,7 +431,7 @@ class ControladorDinamicoTabla
                 $datos[$i]['Type3'] = 'i';
                 $datos[$i]['Type2'] = 'int';
             }
-            if ($datos[$i]['Type'] == 'text' || $datos[$i]['Type2'] == 'varchar' || $datos[$i]['Type'] == 'date' || $datos[$i]['Type'] == 'datetime') {
+            if ($datos[$i]['Type2'] == 'varchar' || $datos[$i]['Type'] == 'date' || $datos[$i]['Type'] == 'datetime') {
                 $datos[$i]['Type3'] = 's';
                 $datos[$i]['Type2'] = 'string';
             }
