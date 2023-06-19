@@ -151,8 +151,10 @@ class ControladorDinamicoTabla
         $referencias = self::referenciasTabla($tabla);
         $dependencias = '';
         foreach ($referencias as &$valor) {
+            $dependencias .= "if (!is_null(\$this->".$valor['columnaOri'].")) {";
             $dependencias .= "\$key = \$link->consulta('select count(0) as cuenta from ".$valor['tablaRef'].' where '.$valor['columnaRef']." = \''.\$this->".$valor['columnaOri'].".'\'', []);\n";
             $dependencias .= "if (\$key[0][\"cuenta\"] < 1) {\$this->error[] = ['tipo'=>'Validacion', 'Campo'=>'".$valor['columnaOri']."', 'Detalle' => 'Referencia no encontrada en ".$valor['tablaRef']."'];}\n";
+            $dependencias .= "}";
         }
 
         $insertDatos = substr($insertDatos, 1);
@@ -223,8 +225,10 @@ class ControladorDinamicoTabla
         $referencias = self::referenciasTabla($tabla);
         $dependencias = '';
         foreach ($referencias as &$valor) {
+            $dependencias .= "if (!is_null(\$this->".$valor['columnaOri'].")) {";
             $dependencias .= "\$key = \$link->consulta('select count(0) as cuenta from ".$valor['tablaRef'].' where '.$valor['columnaRef']." = \''.\$this->".$valor['columnaOri'].".'\'', []);\n";
             $dependencias .= "if (\$key[0][\"cuenta\"] < 1) {\$this->error[] = ['tipo'=>'Validacion', 'Campo'=>'".$valor['columnaOri']."', 'Detalle' => 'Referencia no encontrada en ".$valor['tablaRef']."'];}\n";
+            $dependencias .= "}";
         }
 
         $updateDatos = substr($updateDatos, 1);
