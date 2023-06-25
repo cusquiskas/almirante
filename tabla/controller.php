@@ -31,7 +31,7 @@ class ControladorDinamicoTabla
     {
         $cadena = '';
         foreach ($datos as &$valor) {
-            $cadena .= '$this->'.$valor['Field']." =       (array_key_exists('".$valor['Field']."',       \$array) ? (is_null(\$array['".$valor['Field']."'])?null:(".$valor['Type2'].") \$array['".$valor['Field']."']) : \$this->".$valor['Field'].");\n";
+            $cadena .= '$this->'.$valor['Field']." =       (array_key_exists('".$valor['Field']."',       \$array) ? (strlen(\$array['".$valor['Field']."']==0)?null:(".$valor['Type2'].") \$array['".$valor['Field']."']) : \$this->".$valor['Field'].");\n";
             $cadena .= '$this->'.$valor['Field']."_signo = (array_key_exists('".$valor['Field']."_signo', \$array) ? (string) \$array['".$valor['Field']."_signo'] : '=');\n";
             $cadena .= '$this->'.$valor['Field']."_case  = (array_key_exists('".$valor['Field']."_case',  \$array) ? (string) strtoupper(\$array['".$valor['Field']."_case']) : 'S');\n";
         }
