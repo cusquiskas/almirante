@@ -439,6 +439,8 @@ class ModulController {
     load(objeto) {
         let me = this;
         let d = Moduls.constants.initDate; //de este modo se podrá cachear la información hasta la recarga del sitio. 
+        //antes de hacer el empty, tenemos que ver si hay algo y si tiene definido destructor
+        this.getScript && this.getScript().destructor && this.getScript().destructor();
         $(this.name).empty();
         $.get(objeto.url+'?'+d.getFullYear()+d.getMonth()+d.getDay()+d.getHours()+d.getMinutes()+d.getSeconds(), function (data, status) {
             $(me.name).append(data);
