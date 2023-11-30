@@ -430,13 +430,12 @@ class ControladorDinamicoTabla
         $i = -1;
         foreach ($datos as &$valor) {
             ++$i;
-            //$datos[$i]['Type2'] = $datos[$i]['Type'];
-            $datos[$i]['Type2'] = substr($valor['Type'], 0, stripos($valor['Type'], '('));
+            $datos[$i]['Type2'] = substr($valor['Type'], 0, (stripos($valor['Type'], '(')?stripos($valor['Type'], '('):99));
             if ($datos[$i]['Type2'] == 'int' || $datos[$i]['Type2'] == 'tinyint') {
                 $datos[$i]['Type3'] = 'i';
                 $datos[$i]['Type2'] = 'int';
             }
-            if ($datos[$i]['Type2'] == 'varchar' || $datos[$i]['Type'] == 'date' || $datos[$i]['Type'] == 'datetime') {
+            if ($datos[$i]['Type2'] == 'varchar' || $datos[$i]['Type2'] == 'text' || $datos[$i]['Type'] == 'date' || $datos[$i]['Type'] == 'datetime') {
                 $datos[$i]['Type3'] = 's';
                 $datos[$i]['Type2'] = 'string';
             }
