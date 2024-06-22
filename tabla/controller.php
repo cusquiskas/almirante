@@ -273,14 +273,22 @@ class ControladorDinamicoTabla
         return "public function save(\$array)
         {
             \$insert = true;
+            \$comprobar = true;
             \$this->emptyClass();
             \$this->clearArray();
             \$this->clearError();
             \$arrayUpdate = [$cadena];
-            if (\$this->give(\$arrayUpdate) == 0) {
-                if (count(\$this->getArray()) == 1) { \$this->setDatos(\$this->getArray()[0]); \$insert = false; }
-            } else {
-                return 1;
+            
+            foreach (\$arrayUpdate as \$clave => \$valor) {
+                if (!array_key_exists(\$clave, \$array) || \$array[\$clave] == null) { \$comprobar = false; }
+            }
+            
+            if (\$comprobar) {
+                if (\$this->give(\$arrayUpdate) == 0) {
+                    if (count(\$this->getArray()) == 1) { \$this->setDatos(\$this->getArray()[0]); \$insert = false; }
+                } else {
+                    return 1;
+                }
             }
             
             \$this->setDatos(\$array);
@@ -473,7 +481,7 @@ class ControladorDinamicoTabla
             $cadena .= self::fncDelete($array, $tabla);
             $cadena .= self::fncConstruct();
             $cadena .= "}\n";
-            //echo var_dump($cadena, true);
+            #if ($tabla == 'SPLIT') echo var_dump($cadena, true);
             eval($cadena);
         }
 
