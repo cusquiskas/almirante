@@ -312,9 +312,9 @@ class ControladorDinamicoTabla
             if ($valor['Key'] == 'PRI') {
                 $deletePK .= ",$i => ['tipo' => '".$valor['Type3']."', 'dato' => \$this->".$valor['Field']."]\n";
                 if ($valor['Type'] == 'date'):
-                    $deleteWhere .= 'and '.$valor['Field']." = STR_TO_DATE(?, '%Y-%m-%d')\n";
+                    $deleteWhere .= 'and '.$valor['Field']." = STR_TO_DATE(?, \'%Y-%m-%d\')\n";
                 elseif ($valor['Type'] == 'datetime'):
-                    $deleteWhere .= 'and '.$valor['Field']." = STR_TO_DATE(?, '%Y-%m-%d %H:%i:%s')\n";
+                    $deleteWhere .= 'and '.$valor['Field']." = STR_TO_DATE(?, \'%Y-%m-%d %H:%i:%s\')\n";
                 else:
                     $deleteWhere .= 'and '.$valor['Field']." = ?\n";
                 endif;
