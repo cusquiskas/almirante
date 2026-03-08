@@ -276,7 +276,7 @@ class ControladorDinamicoTabla
         $cadena = '';
         foreach ($datos as $valor) {
             if ($valor['Key'] == 'PRI') {
-                $cadena .= ",'".$valor['Field']."' => \$array['".$valor['Field']."']\n";
+                $cadena .= ",'".$valor['Field']."' => \$array['".$valor['Field']."'] ?? null\n";
             }
         }
         $cadena = substr($cadena, 1);
